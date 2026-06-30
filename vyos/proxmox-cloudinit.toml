@@ -1,0 +1,59 @@
+# VyOS build flavor: qcow2 image with cloud-init enabled, NoCloud datasource (Proxmox).
+# Dropped into vyos-build/data/build-flavors/ by build-from-source.sh, then:
+#   sudo ./build-vyos-image proxmox-cloudinit
+# Output: build/vyos-<version>-proxmox-cloudinit-amd64.qcow2
+#
+# The free VyOS ISO has NO cloud-init; this builds a current/rolling image that does.
+
+image_format = "qcow2"
+
+packages = [
+  "cloud-init",
+  "qemu-guest-agent",
+]
+
+# Base config the image boots with BEFORE cloud-init runs (standard VyOS defaults).
+default_config = '''
+interfaces {
+    loopback lo {
+    }
+}
+system {
+    config-management {
+        commit-revisions "100"
+    }
+    conntrack {
+        modules {
+            ftp
+            h323
+            nfs
+            pptp
+            sip
+            sqlnet
+            tftp
+        }
+    }
+    host-name "vyos"
+    login {
+        user vyos {
+            authentication {
+            }
+        }
+    }
+    syslog {
+        local {
+            facility all {
+                level "info"
+            }
+            facility local7 {
+                level "debug"
+            }
+        }
+    }
+}
+'''
+
+# Restrict cloud-init to the NoCloud datasource that Proxmox's cloud-init drive presents.
+[[includes_chroot]]
+path = "etc/cloud/cloud.cfg.d/90_dpkg.cfg"
+data = "datasource_list: [ NoCloud, ConfigDrive, None ]"
