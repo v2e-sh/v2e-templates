@@ -48,11 +48,14 @@ storage with a `cloudinit` drive capable backend (e.g. `local-lvm`).
 
 ### Promote staging → production
 
-Builds target `9900-9903` so they never clobber in-use `9000-9003`. Once verified, promote
-by pointing Terraform at the new VMID, or destroy the old and rebuild with the prod VMID:
+Builds target `9900-9903` so they never clobber in-use `9000-9003`. Once verified, either
+point Terraform at the staging VMID (`ubuntu_template_id = 9901`), or edit the `*_VMID` in
+`config.env` to the prod IDs and re-run `make`:
 ```sh
-VMID=9001 bash build-ubuntu.sh   # build straight to the prod VMID
+sed -i 's/^UBUNTU_VMID=.*/UBUNTU_VMID="9001"/' config.env && make ubuntu
 ```
+VMIDs come from `config.env` (each `build-*.sh` re-sources it), so a `VMID=…` on the command
+line is ignored.
 
 ## Layout
 
