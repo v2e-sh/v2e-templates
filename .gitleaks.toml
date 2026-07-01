@@ -1,0 +1,12 @@
+title = "v2e gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Non-secret config: image URLs, version pins, checksums, cloud-init template"
+paths = [
+  '''.*\.example$''',
+  '''config\.env''',
+  '''vyos/proxmox-cloudinit\.toml''',
+]
