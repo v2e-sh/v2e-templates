@@ -4,16 +4,16 @@ on:
   push:
     branches: [main]
 jobs:
-  # Advisory: surfaces shell issues without blocking merges.
+  # Advisory: surfaces shell issues as warnings without blocking merges.
+  # Drop the "|| echo" guard to make this blocking once the backlog is clear.
   shellcheck:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - name: ShellCheck
         run: |
           sudo apt-get update && sudo apt-get install -y shellcheck
-          shellcheck -x $(git ls-files '*.sh')
+          shellcheck -x $(git ls-files '*.sh') || echo "::warning::shellcheck reported findings (advisory)"
 
   # Blocking: repo is currently secret-free; keep it that way.
   secret-scan:
