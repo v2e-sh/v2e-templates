@@ -28,7 +28,11 @@ build_template() {
   else
     echo ">> downloading ${img_name}"
     curl -fSL -o "${src}.part" "$IMG_URL"
-    echo "${IMG_SHA256}  ${src}.part" | sha256sum -c -
+    # Clean up the partial on mismatch so a re-run re-downloads instead of tripping
+    # over a stale/corrupt .part (and points at the fix: an upstream point-release
+    # bump changes the checksum — update IMG_SHA256 in config.env).
+    echo "${IMG_SHA256}  ${src}.part" | sha256sum -c - \
+      || { rm -f "${src}.part"; echo "!! checksum mismatch for ${img_name}: update its *_SHA256 in config.env" >&2; exit 1; }
     mv "${src}.part" "$src"
   fi
 
