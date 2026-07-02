@@ -20,7 +20,13 @@ if [[ -n "${VYOS_URL}" ]]; then
   else
     echo ">> downloading ${VYOS_URL}"
     curl -fSL -o "${img}.part" "$VYOS_URL"
-    [[ -n "$VYOS_SHA256" ]] && echo "${VYOS_SHA256}  ${img}.part" | sha256sum -c -
+    # Verify only when a checksum is configured (VYOS_SHA256 may be empty for the
+    # rolling build). An explicit if avoids `[[ -n ]] && ...` tripping `set -e`
+    # when it's empty, and cleans up the partial on a real mismatch.
+    if [[ -n "$VYOS_SHA256" ]]; then
+      echo "${VYOS_SHA256}  ${img}.part" | sha256sum -c - \
+        || { rm -f "${img}.part"; echo "!! VyOS checksum mismatch: update VYOS_SHA256 in config.env" >&2; exit 1; }
+    fi
     mv "${img}.part" "$img"
   fi
 elif [[ -f "$local_img" ]]; then
