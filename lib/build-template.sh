@@ -50,6 +50,11 @@ build_template() {
     printf 'system_info:\n  network:\n    renderers: [%s]\n' "$renderer" >> "$work/99-pve.cfg"
   fi
 
+  # Parrot ships /etc/apt/sources.list.d/cloudflared.list stamped with its own suite
+  # ("echo"), which pkg.cloudflare.com doesn't serve AND for which no keyring is present →
+  # apt-get update fails and cloud-init's first-boot package stage dies. Drop it: the
+  # cloudflared tunnel is optional and, when enabled, cloud-init re-adds the repo with its
+  # keyring itself. No-op on images without the file (ubuntu/debian).
   echo ">> virt-customize: qemu-guest-agent${extra_pkgs:+,$extra_pkgs} + sops/age + datasource, then seal"
   virt-customize -a "$img" --network \
     --install "qemu-guest-agent${extra_pkgs:+,$extra_pkgs}" \
@@ -57,6 +62,7 @@ build_template() {
     --copy-in "$work/age/age:/usr/local/bin/" \
     --copy-in "$work/age/age-keygen:/usr/local/bin/" \
     --run-command 'chmod 0755 /usr/local/bin/sops /usr/local/bin/age /usr/local/bin/age-keygen' \
+    --run-command 'rm -f /etc/apt/sources.list.d/cloudflared.list' \
     --upload "$work/99-pve.cfg:/etc/cloud/cloud.cfg.d/99-pve.cfg" \
     --run-command 'systemctl enable qemu-guest-agent || true' \
     --run-command 'cloud-init clean --logs || true' \
