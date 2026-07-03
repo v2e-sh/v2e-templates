@@ -12,7 +12,7 @@
     {
       "description": "Track the sops binary version pinned as a shell var in config.env (standard managers don't parse it).",
       "customType": "regex",
-      "fileMatch": ["^config\\.env$"],
+      "managerFilePatterns": ["/^config\\.env$/"],
       "matchStrings": ["SOPS_VERSION=\"(?<currentValue>[^\"]+)\""],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "getsops/sops",
@@ -21,7 +21,7 @@
     {
       "description": "Track the age binary version pinned as a shell var in config.env.",
       "customType": "regex",
-      "fileMatch": ["^config\\.env$"],
+      "managerFilePatterns": ["/^config\\.env$/"],
       "matchStrings": ["AGE_VERSION=\"(?<currentValue>[^\"]+)\""],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "FiloSottile/age",
