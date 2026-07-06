@@ -10,7 +10,7 @@
 # Required (per image):  VMID  TEMPLATE_NAME  IMG_URL  IMG_SHA256
 # Optional (per image):  MEMORY(2048)  CORES(2)  DISK_SIZE(20G)
 #                        BIOS(seabios)  MACHINE(pc)  EXTRA_PKGS("")  CI_RENDERER("")
-# From config.env:       STORAGE  BRIDGE  SOPS_VERSION  AGE_VERSION  IMG_CACHE
+# From config.env:       STORAGE  BRIDGE  SOPS_VERSION  SOPS_SHA256  AGE_VERSION  AGE_SHA256  IMG_CACHE
 set -euo pipefail
 
 build_template() {
@@ -41,12 +41,18 @@ build_template() {
   echo ">> copying base image to work area"
   cp "$src" "$img"
 
-  echo ">> downloading sops v${SOPS_VERSION} + age v${AGE_VERSION}"
+  echo ">> downloading + verifying sops v${SOPS_VERSION} + age v${AGE_VERSION}"
   curl -fsSL -o "$work/sops" \
     "https://github.com/getsops/sops/releases/download/v${SOPS_VERSION}/sops-v${SOPS_VERSION}.linux.amd64"
-  curl -fsSL \
-    "https://github.com/FiloSottile/age/releases/download/v${AGE_VERSION}/age-v${AGE_VERSION}-linux-amd64.tar.gz" \
-    | tar -xz -C "$work"
+  echo "${SOPS_SHA256}  $work/sops" | sha256sum -c - \
+    || { echo "!! checksum mismatch for sops v${SOPS_VERSION}: update SOPS_SHA256 in config.env" >&2; exit 1; }
+  # age is a tarball we unpack in place: fetch to a file and verify BEFORE extracting, so an
+  # unverified download never reaches tar (can't pipe curl straight into tar and still check).
+  curl -fsSL -o "$work/age.tgz" \
+    "https://github.com/FiloSottile/age/releases/download/v${AGE_VERSION}/age-v${AGE_VERSION}-linux-amd64.tar.gz"
+  echo "${AGE_SHA256}  $work/age.tgz" | sha256sum -c - \
+    || { echo "!! checksum mismatch for age v${AGE_VERSION}: update AGE_SHA256 in config.env" >&2; exit 1; }
+  tar -xz -C "$work" -f "$work/age.tgz"
 
   # cloud-init drop-in: pin the NoCloud/ConfigDrive datasource (+ NM renderer for desktops)
   printf 'datasource_list: [ NoCloud, ConfigDrive ]\n' > "$work/99-pve.cfg"

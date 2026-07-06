@@ -3,6 +3,9 @@ on:
   pull_request:
   push:
     branches: [main]
+# Least privilege: CI only reads the repo. Jobs raise their own scopes if ever needed.
+permissions:
+  contents: read
 jobs:
   # Advisory: surfaces shell issues as warnings without blocking merges.
   # Drop the "|| echo" guard to make this blocking once the backlog is clear.
@@ -20,17 +23,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history so verified-secret scans can walk past commits
       - name: TruffleHog
         run: |
-          docker run --rm -v "$PWD:/repo" trufflesecurity/trufflehog:latest \
-            filesystem /repo --only-verified --fail
+          docker run --rm -v "$PWD:/repo" trufflesecurity/trufflehog:3.95.8 \
+            git file:///repo --only-verified --fail
 
   # Blocking: gitleaks pattern scan alongside TruffleHog (defense in depth).
   gitleaks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
       - name: gitleaks
         run: |
-          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:latest \
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 \
             detect --source=/repo --no-git --redact --config=/repo/.gitleaks.toml
