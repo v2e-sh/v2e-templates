@@ -4,16 +4,25 @@
     "config:recommended",
     "group:allNonMajor",
     ":dependencyDashboard",
-    ":semanticCommits"
+    ":semanticCommits",
+    "helpers:pinGitHubActionDigests"
   ],
-  "labels": ["dependencies"],
-  "schedule": ["before 6am on monday"],
+  "labels": [
+    "dependencies"
+  ],
+  "schedule": [
+    "before 6am on monday"
+  ],
   "customManagers": [
     {
       "description": "Track the sops binary version pinned as a shell var in config.env (standard managers don't parse it).",
       "customType": "regex",
-      "managerFilePatterns": ["/^config\\.env$/"],
-      "matchStrings": ["SOPS_VERSION=\"(?<currentValue>[^\"]+)\""],
+      "managerFilePatterns": [
+        "/^config\\.env$/"
+      ],
+      "matchStrings": [
+        "SOPS_VERSION=\"(?<currentValue>[^\"]+)\""
+      ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "getsops/sops",
       "extractVersionTemplate": "^v(?<version>.+)$"
@@ -21,8 +30,12 @@
     {
       "description": "Track the age binary version pinned as a shell var in config.env.",
       "customType": "regex",
-      "managerFilePatterns": ["/^config\\.env$/"],
-      "matchStrings": ["AGE_VERSION=\"(?<currentValue>[^\"]+)\""],
+      "managerFilePatterns": [
+        "/^config\\.env$/"
+      ],
+      "matchStrings": [
+        "AGE_VERSION=\"(?<currentValue>[^\"]+)\""
+      ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "FiloSottile/age",
       "extractVersionTemplate": "^v(?<version>.+)$"
@@ -30,17 +43,27 @@
   ],
   "packageRules": [
     {
-      "description": "Major bumps never open a PR on their own — they wait for an explicit tick on the Dependency Dashboard. Enforces the pin-exact policy: a major (provider, ansible collection, base image, app image) is a deliberate act, reviewed for breaking changes, not a Monday-morning automerge.",
-      "matchUpdateTypes": ["major"],
+      "description": "Major bumps never open a PR on their own \u2014 they wait for an explicit tick on the Dependency Dashboard. Enforces the pin-exact policy: a major (provider, ansible collection, base image, app image) is a deliberate act, reviewed for breaking changes, not a Monday-morning automerge.",
+      "matchUpdateTypes": [
+        "major"
+      ],
       "dependencyDashboardApproval": true,
-      "labels": ["dependencies", "major-review"],
+      "labels": [
+        "dependencies",
+        "major-review"
+      ],
       "automerge": false
     },
     {
-      "description": "sops/age each carry a paired *_SHA256 in config.env that Renovate cannot recompute. Gate their bumps behind dashboard approval so a version is never merged with a stale checksum — the operator refreshes the SHA256 in the same PR (the template build fails closed on a mismatch regardless).",
-      "matchFileNames": ["config.env"],
+      "description": "sops/age each carry a paired *_SHA256 in config.env that Renovate cannot recompute. Gate their bumps behind dashboard approval so a version is never merged with a stale checksum \u2014 the operator refreshes the SHA256 in the same PR (the template build fails closed on a mismatch regardless).",
+      "matchFileNames": [
+        "config.env"
+      ],
       "dependencyDashboardApproval": true,
-      "labels": ["dependencies", "needs-checksum-update"]
+      "labels": [
+        "dependencies",
+        "needs-checksum-update"
+      ]
     }
   ]
 }
