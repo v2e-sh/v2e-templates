@@ -88,7 +88,7 @@ Makefile              make ubuntu|debian|parrot|all|lint
 Clone it with a cloud-init drive and confirm cloud-init applies an IP:
 ```sh
 qm clone <VMID> 9950 --name verify
-qm set 9950 --ide2 local-lvm:cloudinit --ipconfig0 ip=10.0.0.50/24,gw=10.0.0.1 --ciuser packer --cipassword packer
+qm set 9950 --ide2 local-lvm:cloudinit --ipconfig0 ip=10.0.0.50/24,gw=10.0.0.1 --ciuser verify --cipassword verify
 qm start 9950
 qm guest exec 9950 -- cloud-init status   # -> done ; ip shows 10.0.0.50 ; sops/age present
 qm stop 9950 && qm destroy 9950 --purge
