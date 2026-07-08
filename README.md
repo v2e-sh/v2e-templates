@@ -65,7 +65,9 @@ lib/build-template.sh shared engine: fetch+verify -> virt-customize -> import ->
 build-ubuntu.sh       thin: Ubuntu params -> build_template
 build-debian.sh       thin: Debian params
 build-parrot.sh       Parrot params (UEFI, NetworkManager renderer, btrfs-progs, +cloud-init)
-Makefile              make ubuntu|debian|parrot|all|lint
+build-vyos.sh          imports a VyOS qcow2 (fetched or built by vyos-build) -> template
+vyos/build-from-source.sh throwaway builder VM runs vyos-build in Docker -> qcow2
+Makefile               make ubuntu|debian|parrot|vyos|vyos-build|all|lint
 ```
 
 ## Per-image notes
